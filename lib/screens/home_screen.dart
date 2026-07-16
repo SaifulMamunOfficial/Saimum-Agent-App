@@ -37,17 +37,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       final appState = ref.read(appStateProvider);
       await appState.fetchDailySummary();
-      
+
       // Parse allowed departments
       final user = appState.currentUser;
       if (user != null && user['allowed_departments'] != null) {
         final List<dynamic> depts = user['allowed_departments'];
-        _allowedDeptsList = depts.map((d) => d as Map<String, dynamic>).toList();
+        _allowedDeptsList = depts
+            .map((d) => d as Map<String, dynamic>)
+            .toList();
       }
-      
+
       if (_allowedDeptsList.isNotEmpty) {
         setState(() {
-          _selectedAttendanceDeptName = _allowedDeptsList.first['name'] as String;
+          _selectedAttendanceDeptName =
+              _allowedDeptsList.first['name'] as String;
           _selectedAttendanceDeptId = _allowedDeptsList.first['id'] as int;
         });
         _loadAttendanceStudents();
@@ -58,11 +61,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _loadAttendanceStudents() async {
     if (_selectedAttendanceDeptName != null) {
       final appState = ref.read(appStateProvider);
-      await appState.fetchAttendanceStudents(department: _selectedAttendanceDeptName!);
+      await appState.fetchAttendanceStudents(
+        department: _selectedAttendanceDeptName!,
+      );
       if (mounted) {
         setState(() {
           for (var student in appState.attendanceStudents) {
-            final String studentIdStr = student['reg_id'] ?? student['student_id'] ?? '';
+            final String studentIdStr =
+                student['reg_id'] ?? student['student_id'] ?? '';
             final bool isPresent = student['is_present'] ?? false;
             _attendanceState[studentIdStr] = isPresent;
           }
@@ -87,9 +93,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (mounted) {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const CollectScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const CollectScreen()),
         );
       }
     } catch (e) {
@@ -110,7 +114,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             color: Colors.red.shade50,
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.info_outline_rounded, color: Colors.red.shade400, size: 36),
+          child: Icon(
+            Icons.info_outline_rounded,
+            color: Colors.red.shade400,
+            size: 36,
+          ),
         ),
         title: const Text(
           "ভিন্ন বিভাগের শিক্ষার্থী",
@@ -120,7 +128,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         content: Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 14, height: 1.5, color: Color(0xFF636E72)),
+          style: const TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: Color(0xFF636E72),
+          ),
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
@@ -131,10 +143,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF751F),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Text("বুঝেছি", style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                "বুঝেছি",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -157,8 +174,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Text("পাসওয়ার্ড পরিবর্তন", style: TextStyle(fontWeight: FontWeight.bold)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: const Text(
+                "পাসওয়ার্ড পরিবর্তন",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               content: Form(
                 key: formKey,
                 child: Column(
@@ -172,7 +194,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         prefixIcon: Icon(Icons.lock_outline),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return "বর্তমান পাসওয়ার্ড দিন।";
+                        if (value == null || value.isEmpty)
+                          return "বর্তমান পাসওয়ার্ড দিন।";
                         return null;
                       },
                     ),
@@ -186,8 +209,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         helperText: "কমপক্ষে ৬ অক্ষরের হতে হবে",
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return "নতুন পাসওয়ার্ড দিন।";
-                        if (value.length < 6) return "কমপক্ষে ৬ অক্ষরের হতে হবে।";
+                        if (value == null || value.isEmpty)
+                          return "নতুন পাসওয়ার্ড দিন।";
+                        if (value.length < 6)
+                          return "কমপক্ষে ৬ অক্ষরের হতে হবে।";
                         return null;
                       },
                     ),
@@ -196,7 +221,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: localLoading ? null : () => Navigator.pop(dialogContext),
+                  onPressed: localLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
                   child: const Text("বাতিল"),
                 ),
                 ElevatedButton(
@@ -206,18 +233,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (!formKey.currentState!.validate()) return;
                           setDialogState(() => localLoading = true);
                           try {
-                            await ref.read(appStateProvider).changePassword(
-                              currentPasswordController.text,
-                              newPasswordController.text,
-                            );
+                            await ref
+                                .read(appStateProvider)
+                                .changePassword(
+                                  currentPasswordController.text,
+                                  newPasswordController.text,
+                                );
                             navigator.pop();
                             scaffoldMessenger.showSnackBar(
-                              const SnackBar(content: Text("পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে।"), backgroundColor: Colors.green),
+                              const SnackBar(
+                                content: Text(
+                                  "পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে।",
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
                             );
                           } catch (e) {
                             setDialogState(() => localLoading = false);
                             scaffoldMessenger.showSnackBar(
-                              SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                              SnackBar(
+                                content: Text(e.toString()),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                           }
                         },
@@ -226,7 +263,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     foregroundColor: Colors.white,
                   ),
                   child: localLoading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
                       : const Text("সংরক্ষণ করুন"),
                 ),
               ],
@@ -253,7 +299,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             const Text(
               "আজকের কার্যক্রমের সারাংশ",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D3436)),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D3436),
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -263,13 +313,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(child: _buildStatCard("আজকের কালেকশন", "৳${summary?['collected_today'] ?? 0.0}", Icons.payments, Colors.blue, onTap: () {
-                      _showStaticPaymentsModal(context, "আজকের কালেকশন", summary?['collected_list'] ?? []);
-                    })),
+                    Expanded(
+                      child: _buildStatCard(
+                        "আজকের কালেকশন",
+                        "৳${summary?['collected_today'] ?? 0.0}",
+                        Icons.payments,
+                        Colors.blue,
+                        onTap: () {
+                          _showStaticPaymentsModal(
+                            context,
+                            "আজকের কালেকশন",
+                            summary?['collected_list'] ?? [],
+                          );
+                        },
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: _buildStatCard("আজ অনুমোদিত", "৳${summary?['approved_today'] ?? 0.0}", Icons.verified, Colors.green, onTap: () {
-                      _showStaticPaymentsModal(context, "আজ অনুমোদিত", summary?['approved_list'] ?? []);
-                    })),
+                    Expanded(
+                      child: _buildStatCard(
+                        "আজ অনুমোদিত",
+                        "৳${summary?['approved_today'] ?? 0.0}",
+                        Icons.verified,
+                        Colors.green,
+                        onTap: () {
+                          _showStaticPaymentsModal(
+                            context,
+                            "আজ অনুমোদিত",
+                            summary?['approved_list'] ?? [],
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -286,11 +360,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(child: _buildStatCard("আজকের সংগ্রহ", "৳${summary?['collected_today'] ?? 0.0}", Icons.monetization_on, Colors.green, onTap: () {
-                      _showStaticPaymentsModal(context, "আজকের সংগ্রহ", summary?['collected_list'] ?? []);
-                    })),
+                    Expanded(
+                      child: _buildStatCard(
+                        "আজকের সংগ্রহ",
+                        "৳${summary?['collected_today'] ?? 0.0}",
+                        Icons.monetization_on,
+                        Colors.green,
+                        onTap: () {
+                          _showStaticPaymentsModal(
+                            context,
+                            "আজকের সংগ্রহ",
+                            summary?['collected_list'] ?? [],
+                          );
+                        },
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: _buildStatCard("অপেক্ষমান", "${summary?['pending_approval_count'] ?? 0} টি", Icons.hourglass_top, Colors.orange)),
+                    Expanded(
+                      child: _buildStatCard(
+                        "অপেক্ষমান",
+                        "${summary?['pending_approval_count'] ?? 0} টি",
+                        Icons.hourglass_top,
+                        Colors.orange,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -306,7 +399,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     side: BorderSide(color: Colors.grey.shade200),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 14.0,
+                    ),
                     child: Row(
                       children: [
                         Container(
@@ -315,7 +411,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             color: Colors.red.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.account_balance, color: Colors.red, size: 24),
+                          child: const Icon(
+                            Icons.account_balance,
+                            color: Colors.red,
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -324,19 +424,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             children: [
                               Text(
                                 "অনুমোদিত বিভাগের মোট বকেয়া",
-                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               AnimatedCrossFade(
                                 firstChild: const Text(
                                   "ট্যাপ করে দেখুন",
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF636E72)),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF636E72),
+                                  ),
                                 ),
                                 secondChild: Text(
                                   "৳${summary?['total_dept_due'] ?? 0.0}",
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
                                 ),
-                                crossFadeState: _showDue ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                                crossFadeState: _showDue
+                                    ? CrossFadeState.showSecond
+                                    : CrossFadeState.showFirst,
                                 duration: const Duration(milliseconds: 300),
                               ),
                             ],
@@ -355,7 +469,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 20),
               const Text(
                 "আজকের হাজিরার চিত্র",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3436)),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3436),
+                ),
               ),
               const SizedBox(height: 12),
               Card(
@@ -370,9 +488,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildAttendanceStatItem("মোট শিক্ষার্থী", "${summary?['attendance_total'] ?? 0}", Colors.blue),
-                      _buildAttendanceStatItem("উপস্থিত", "${summary?['attendance_present'] ?? 0}", Colors.green),
-                      _buildAttendanceStatItem("অনুপস্থিত", "${summary?['attendance_absent'] ?? 0}", Colors.red),
+                      _buildAttendanceStatItem(
+                        "মোট শিক্ষার্থী",
+                        "${summary?['attendance_total'] ?? 0}",
+                        Colors.blue,
+                      ),
+                      _buildAttendanceStatItem(
+                        "উপস্থিত",
+                        "${summary?['attendance_present'] ?? 0}",
+                        Colors.green,
+                      ),
+                      _buildAttendanceStatItem(
+                        "অনুপস্থিত",
+                        "${summary?['attendance_absent'] ?? 0}",
+                        Colors.red,
+                      ),
                     ],
                   ),
                 ),
@@ -384,7 +514,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (!isOfficer) ...[
               const Text(
                 "শিক্ষার্থী খুঁজুন",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3436)),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3436),
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -396,8 +530,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       decoration: InputDecoration(
                         hintText: "আইডি বা রেজিঃ দিন...",
                         prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                       ),
                       onSubmitted: (_) => _handleSearch(),
                     ),
@@ -408,16 +546,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF751F),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 20,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    child: const Text("খুঁজুন", style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "খুঁজুন",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
             ] else ...[
-              const Text("পরিচালনা কার্যক্রম", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3436))),
+              const Text(
+                "পরিচালনা কার্যক্রম",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3436),
+                ),
+              ),
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: () {
@@ -427,7 +580,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 },
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20.0,
+                    horizontal: 16.0,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.shade600,
                     borderRadius: BorderRadius.circular(16),
@@ -436,13 +592,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         color: Colors.green.withValues(alpha: 0.2),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.verified_user_rounded, size: 30, color: Colors.white),
+                      Icon(
+                        Icons.verified_user_rounded,
+                        size: 30,
+                        color: Colors.white,
+                      ),
                       SizedBox(width: 12),
                       Flexible(
                         child: Text(
@@ -477,7 +637,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // Unified Global Search Bar Header (10 Years UX Expert standard Layout)
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -490,8 +653,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         controller: _studentSearchController,
                         decoration: InputDecoration(
                           hintText: "শিক্ষার্থীর নাম বা আইডি দিয়ে খুঁজুন...",
-                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                          prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey, size: 20),
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 13,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
                           suffixIcon: _studentSearchController.text.isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear, size: 18),
@@ -504,7 +674,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 )
                               : null,
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
                         ),
                         onSubmitted: (val) {
                           setState(() {
@@ -518,22 +690,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _studentSearchQuery = _studentSearchController.text.trim();
+                        _studentSearchQuery = _studentSearchController.text
+                            .trim();
                       });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF751F),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       elevation: 0,
                     ),
-                    child: const Text("খুঁজুন", style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "খুঁজুন",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
             ),
-            
+
             // Sub Header TabBar navigation
             Container(
               color: Colors.white,
@@ -549,26 +730,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ),
-            
+
             // Inner Tab Views
             Expanded(
               child: TabBarView(
                 children: [
                   StudentListScreen(
-                    status: 'all', 
-                    title: 'সকল শিক্ষার্থী', 
+                    status: 'all',
+                    title: 'সকল শিক্ষার্থী',
                     showAppBar: false,
                     search: _studentSearchQuery,
                   ),
                   StudentListScreen(
-                    status: 'due', 
-                    title: 'বকেয়া তালিকা', 
+                    status: 'due',
+                    title: 'বকেয়া তালিকা',
                     showAppBar: false,
                     search: _studentSearchQuery,
                   ),
                   StudentListScreen(
-                    status: 'paid', 
-                    title: 'পরিশোধিত তালিকা', 
+                    status: 'paid',
+                    title: 'পরিশোধিত তালিকা',
                     showAppBar: false,
                     search: _studentSearchQuery,
                   ),
@@ -583,28 +764,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _toggleStudentAttendance(String studentId, bool status) async {
     if (_isSyncingAttendance) return;
-    
+
     setState(() {
       _isSyncingAttendance = true;
     });
 
     try {
       int departmentId = _selectedAttendanceDeptId ?? 1;
-      await ref.read(appStateProvider).submitAttendance(studentId, departmentId);
-      
+      await ref
+          .read(appStateProvider)
+          .submitAttendance(studentId, departmentId);
+
       setState(() {
         _attendanceState[studentId] = status;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("হাজিরা সফলভাবে সংরক্ষণ করা হয়েছে।"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("হাজিরা সফলভাবে সংরক্ষণ করা হয়েছে।"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -622,7 +811,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final today = DateTime.now();
     final formattedDate = "${today.day}/${today.month}/${today.year}";
     final students = appState.attendanceStudents;
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: Column(
@@ -640,23 +829,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       const Text(
                         "আজকের হাজিরা শীট",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3436)),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2D3436),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "তারিখ: $formattedDate",
-                        style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                
+
                 // Allowed Departments Dropdown Selection
                 if (_allowedDeptsList.isNotEmpty)
                   Flexible(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF751F).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -665,19 +864,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: DropdownButton<int>(
                           isExpanded: true,
                           value: _selectedAttendanceDeptId,
-                          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFFF751F), size: 20),
-                          style: const TextStyle(color: Color(0xFFFF751F), fontWeight: FontWeight.bold, fontSize: 12),
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: Color(0xFFFF751F),
+                            size: 20,
+                          ),
+                          style: const TextStyle(
+                            color: Color(0xFFFF751F),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                           onChanged: (int? newValue) {
                             if (newValue != null) {
-                              final dept = _allowedDeptsList.firstWhere((d) => d['id'] == newValue);
+                              final dept = _allowedDeptsList.firstWhere(
+                                (d) => d['id'] == newValue,
+                              );
                               setState(() {
                                 _selectedAttendanceDeptId = newValue;
-                                _selectedAttendanceDeptName = dept['name'] as String;
+                                _selectedAttendanceDeptName =
+                                    dept['name'] as String;
                               });
                               _loadAttendanceStudents();
                             }
                           },
-                          items: _allowedDeptsList.map<DropdownMenuItem<int>>((Map<String, dynamic> dept) {
+                          items: _allowedDeptsList.map<DropdownMenuItem<int>>((
+                            Map<String, dynamic> dept,
+                          ) {
                             return DropdownMenuItem<int>(
                               value: dept['id'] as int,
                               child: Text(
@@ -693,14 +905,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 else
                   Flexible(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
                         "কোনো অনুমোদিত বিভাগ নেই",
-                        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 11),
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -708,104 +927,140 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ),
-          
+
           Expanded(
             child: appState.isLoading && students.isEmpty
                 ? const Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF751F)),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFFFF751F),
+                      ),
                     ),
                   )
                 : students.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.people_outline, size: 48, color: Colors.grey.shade400),
-                            const SizedBox(height: 12),
-                            Text(
-                              "এই বিভাগে কোনো শিক্ষার্থী পাওয়া যায়নি।",
-                              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 48,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "এই বিভাগে কোনো শিক্ষার্থী পাওয়া যায়নি।",
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async => _loadAttendanceStudents(),
+                    color: const Color(0xFFFF751F),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(14.0),
+                      itemCount: students.length,
+                      itemBuilder: (context, index) {
+                        final student = students[index];
+                        final String studentIdStr =
+                            student['reg_id'] ?? student['student_id'] ?? '';
+                        final bool isPresent =
+                            _attendanceState[studentIdStr] ?? false;
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 10.0),
+                          color: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            side: BorderSide(color: Colors.grey.shade100),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
                             ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () async => _loadAttendanceStudents(),
-                        color: const Color(0xFFFF751F),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(14.0),
-                          itemCount: students.length,
-                          itemBuilder: (context, index) {
-                            final student = students[index];
-                            final String studentIdStr = student['reg_id'] ?? student['student_id'] ?? '';
-                            final bool isPresent = _attendanceState[studentIdStr] ?? false;
-
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 10.0),
-                              color: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                side: BorderSide(color: Colors.grey.shade100),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: (isPresent ? Colors.green : Colors.grey.shade100),
-                                      radius: 20,
-                                      child: Icon(
-                                        isPresent ? Icons.check : Icons.person_outline,
-                                        color: isPresent ? Colors.white : Colors.grey.shade500,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            student['name'] ?? '',
-                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3436)),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            "আইডি: $studentIdStr",
-                                            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    InkWell(
-                                      onTap: null, // ম্যানুয়াল হাজিরা বন্ধ করা হয়েছে, শুধুমাত্র স্ক্যান করে হাজিরা নেওয়া যাবে
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                        decoration: BoxDecoration(
-                                          color: isPresent ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          isPresent ? "উপস্থিত" : "অনুপস্থিত",
-                                          style: TextStyle(
-                                            color: isPresent ? Colors.green : Colors.red,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: (isPresent
+                                      ? Colors.green
+                                      : Colors.grey.shade100),
+                                  radius: 20,
+                                  child: Icon(
+                                    isPresent
+                                        ? Icons.check
+                                        : Icons.person_outline,
+                                    color: isPresent
+                                        ? Colors.white
+                                        : Colors.grey.shade500,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                                const SizedBox(width: 14),
+
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        student['name'] ?? '',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Color(0xFF2D3436),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "আইডি: $studentIdStr",
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey.shade500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                InkWell(
+                                  onTap:
+                                      null, // ম্যানুয়াল হাজিরা বন্ধ করা হয়েছে, শুধুমাত্র স্ক্যান করে হাজিরা নেওয়া যাবে
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isPresent
+                                          ? Colors.green.withOpacity(0.1)
+                                          : Colors.red.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      isPresent ? "উপস্থিত" : "অনুপস্থিত",
+                                      style: TextStyle(
+                                        color: isPresent
+                                            ? Colors.green
+                                            : Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -813,7 +1068,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // Build Tab 5: Profile View (Luxury Redesigned)
-  Widget _buildProfileTab(Map<String, dynamic>? user, bool isOfficer, List<String> allowedDepts) {
+  Widget _buildProfileTab(
+    Map<String, dynamic>? user,
+    bool isOfficer,
+    List<String> allowedDepts,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -850,7 +1109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Avatar positioned slightly overlapping
                 Transform.translate(
                   offset: const Offset(0, -40),
@@ -862,8 +1121,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     child: CircleAvatar(
                       radius: 38,
-                      backgroundColor: const Color(0xFFFF751F).withValues(alpha: 0.1),
-                      child: const Icon(Icons.person, color: Color(0xFFFF751F), size: 44),
+                      backgroundColor: const Color(
+                        0xFFFF751F,
+                      ).withValues(alpha: 0.1),
+                      child: const Icon(
+                        Icons.person,
+                        color: Color(0xFFFF751F),
+                        size: 44,
+                      ),
                     ),
                   ),
                 ),
@@ -877,37 +1142,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Text(
                           user?['name'] ?? 'ব্যবহারকারী',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50)),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2C3E50),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF751F).withValues(alpha: 0.08),
+                            color: const Color(
+                              0xFFFF751F,
+                            ).withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            isOfficer ? "প্রধান অ্যাকাউন্টস অফিসার" : "সংগ্রহকারী এজেন্ট",
-                            style: const TextStyle(color: Color(0xFFFF751F), fontSize: 11, fontWeight: FontWeight.bold),
+                            isOfficer
+                                ? "প্রধান অ্যাকাউন্টস অফিসার"
+                                : "সংগ্রহকারী এজেন্ট",
+                            style: const TextStyle(
+                              color: Color(0xFFFF751F),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        
+
                         // Email/Phone details if available
                         if (user?['email'] != null) ...[
                           const SizedBox(height: 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.email_outlined, size: 14, color: Colors.grey.shade500),
+                              Icon(
+                                Icons.email_outlined,
+                                size: 14,
+                                color: Colors.grey.shade500,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 user!['email'].toString(),
-                                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
                         ],
-                        
+
                         // Allowed departments tags
                         if (!isOfficer && allowedDepts.isNotEmpty) ...[
                           const SizedBox(height: 16),
@@ -915,24 +1202,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           const SizedBox(height: 8),
                           const Text(
                             "অনুমোদিত বিভাগসমূহ",
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Wrap(
                             spacing: 8,
                             runSpacing: 6,
                             alignment: WrapAlignment.center,
-                            children: allowedDepts.map((d) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A1A2E).withValues(alpha: 0.06),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                d, 
-                                style: const TextStyle(fontSize: 10, color: Color(0xFF1A1A2E), fontWeight: FontWeight.bold),
-                              ),
-                            )).toList(),
+                            children: allowedDepts
+                                .map(
+                                  (d) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF1A1A2E,
+                                      ).withValues(alpha: 0.06),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      d,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF1A1A2E),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ],
                       ],
@@ -961,16 +1265,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.lock_reset_rounded, color: Color(0xFFFF751F)),
-                  title: const Text("পাসওয়ার্ড পরিবর্তন", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                  leading: const Icon(
+                    Icons.lock_reset_rounded,
+                    color: Color(0xFFFF751F),
+                  ),
+                  title: const Text(
+                    "পাসওয়ার্ড পরিবর্তন",
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  ),
                   trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                   onTap: () => _showChangePasswordDialog(context),
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: Icon(Icons.logout_rounded, color: Colors.red.shade400),
-                  title: Text("লগআউট", style: TextStyle(color: Colors.red.shade400, fontWeight: FontWeight.bold, fontSize: 14)),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Colors.red, size: 20),
+                  leading: const Icon(
+                    Icons.system_update_rounded,
+                    color: Colors.blue,
+                  ),
+                  title: const Text(
+                    "আপডেট চেক করুন",
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+                  onTap: () => UpdateService.checkForUpdate(
+                    context,
+                    showNoUpdateMessage: true,
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(
+                    Icons.logout_rounded,
+                    color: Colors.red.shade400,
+                  ),
+                  title: Text(
+                    "লগআউট",
+                    style: TextStyle(
+                      color: Colors.red.shade400,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.red,
+                    size: 20,
+                  ),
                   onTap: () => ref.read(appStateProvider).logout(),
                 ),
               ],
@@ -986,12 +1326,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final appState = ref.watch(appStateProvider);
     final user = appState.currentUser;
     final summary = appState.dailySummary;
-    final isOfficer = user != null && (user['role'] == 'admin' || user['role'] == 'account_officer');
-    
-    final dynamic deptData = user?['allowed_departments'] ?? user?['agent_allowed_departments'];
+    final isOfficer =
+        user != null &&
+        (user['role'] == 'admin' || user['role'] == 'account_officer');
+
+    final dynamic deptData =
+        user?['allowed_departments'] ?? user?['agent_allowed_departments'];
     List<String> allowedDepts = [];
     if (deptData is List) {
-      allowedDepts = deptData.map((e) => e is Map ? (e['name']?.toString() ?? e.toString()) : e.toString()).toList();
+      allowedDepts = deptData
+          .map(
+            (e) => e is Map
+                ? (e['name']?.toString() ?? e.toString())
+                : e.toString(),
+          )
+          .toList();
     } else if (deptData is String && deptData.isNotEmpty) {
       allowedDepts = deptData.split(',').map((e) => e.trim()).toList();
     }
@@ -1025,7 +1374,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: Text(
           titles[_currentIndex],
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 17),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 17,
+          ),
         ),
         backgroundColor: const Color(0xFFFF751F), // Saimum Brand Orange Color
         elevation: 0,
@@ -1042,10 +1395,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: tabs,
-      ),
+      body: IndexedStack(index: _currentIndex, children: tabs),
 
       // Docked highlighted floating Action Button in the middle (FAB)
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -1061,16 +1411,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => QrScannerScreen(
-                      initialDepartmentId: initDept,
-                    ),
+                    builder: (context) =>
+                        QrScannerScreen(initialDepartmentId: initDept),
                   ),
                 );
               },
               backgroundColor: const Color(0xFFFF751F),
               elevation: 6,
               shape: const CircleBorder(),
-              child: const Icon(Icons.qr_code_scanner_rounded, size: 28, color: Colors.white),
+              child: const Icon(
+                Icons.qr_code_scanner_rounded,
+                size: 28,
+                color: Colors.white,
+              ),
             ),
 
       // Premium BottomAppBar with center notch configuration
@@ -1089,7 +1442,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Left Navigation Buttons
               _buildBottomNavItem(0, Icons.dashboard_rounded, "ড্যাশবোর্ড"),
               _buildBottomNavItem(1, Icons.people_rounded, "শিক্ষার্থী"),
-              
+
               // Spacing helper for the central docked floating button
               const SizedBox(width: 48),
 
@@ -1108,7 +1461,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Custom Navigation Item Builder with active color feedback
   Widget _buildBottomNavItem(int targetIndex, IconData icon, String label) {
     final bool isActive = _currentIndex == targetIndex;
-    final Color itemColor = isActive ? const Color(0xFFFF751F) : Colors.grey.shade500;
+    final Color itemColor = isActive
+        ? const Color(0xFFFF751F)
+        : Colors.grey.shade500;
 
     return Material(
       color: Colors.transparent,
@@ -1144,7 +1499,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _showStaticPaymentsModal(BuildContext context, String title, List<dynamic> payments) {
+  void _showStaticPaymentsModal(
+    BuildContext context,
+    String title,
+    List<dynamic> payments,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1159,7 +1518,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -1169,7 +1531,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     InkWell(
@@ -1180,7 +1545,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: Colors.grey.shade100,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.close_rounded, size: 20, color: Colors.grey.shade700),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
                     ),
                   ],
@@ -1189,7 +1558,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const Divider(height: 1),
               Expanded(
                 child: payments.isEmpty
-                    ? const Center(child: Text("কোনো পেমেন্ট নেই", style: TextStyle(color: Colors.grey)))
+                    ? const Center(
+                        child: Text(
+                          "কোনো পেমেন্ট নেই",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
                         itemCount: payments.length,
@@ -1209,24 +1583,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Text(
                                           p['student']?['name'] ?? '',
-                                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.green.shade50,
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
                                         ),
                                         child: Text(
                                           "৳${p['amount']}",
-                                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.green.shade700,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -1234,32 +1621,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   const SizedBox(height: 4),
                                   Text(
                                     "আইডি: ${p['student']?['student_id'] ?? ''}",
-                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
                                   ),
                                   const Divider(height: 20),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               "বিল: ${p['label']}",
-                                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 2,
                                             ),
                                             const SizedBox(height: 2),
                                             Row(
                                               children: [
-                                                Icon(Icons.person_outline_rounded, size: 13, color: Colors.grey.shade500),
+                                                Icon(
+                                                  Icons.person_outline_rounded,
+                                                  size: 13,
+                                                  color: Colors.grey.shade500,
+                                                ),
                                                 const SizedBox(width: 4),
                                                 Flexible(
                                                   child: Text(
                                                     p['agent_name'] ?? '',
-                                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color:
+                                                          Colors.grey.shade600,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
@@ -1269,17 +1673,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: p['status'] == 2 ? Colors.green.shade50 : Colors.blue.shade50,
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: p['status'] == 2
+                                              ? Colors.green.shade50
+                                              : Colors.blue.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: Text(
-                                          p['status'] == 2 ? 'অনুমোদিত' : 'অপেক্ষমান',
+                                          p['status'] == 2
+                                              ? 'অনুমোদিত'
+                                              : 'অপেক্ষমান',
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
-                                            color: p['status'] == 2 ? Colors.green.shade700 : Colors.blue.shade700
+                                            color: p['status'] == 2
+                                                ? Colors.green.shade700
+                                                : Colors.blue.shade700,
                                           ),
                                         ),
                                       ),
@@ -1299,51 +1714,71 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color, {bool fullWidth = false, VoidCallback? onTap}) {
+  Widget _buildStatCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color, {
+    bool fullWidth = false,
+    VoidCallback? onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(15),
       child: Card(
-      elevation: 0,
-      color: color.withValues(alpha: 0.08), // Tinted premium color background
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-        side: BorderSide(color: color.withValues(alpha: 0.15)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: fullWidth ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-          children: [
-            Text(
-              value,
-              textAlign: fullWidth ? TextAlign.start : TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
-              mainAxisAlignment: fullWidth ? MainAxisAlignment.start : MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: color, size: 15),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: TextStyle(fontSize: 10, color: color.withValues(alpha: 0.8), fontWeight: FontWeight.w700),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+        elevation: 0,
+        color: color.withValues(alpha: 0.08), // Tinted premium color background
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(color: color.withValues(alpha: 0.15)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 14.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: fullWidth
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            children: [
+              Text(
+                value,
+                textAlign: fullWidth ? TextAlign.start : TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
                 ),
-              ],
-            ),
-          ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+                mainAxisAlignment: fullWidth
+                    ? MainAxisAlignment.start
+                    : MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 15),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: color.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildAttendanceStatItem(String label, String value, Color color) {
@@ -1351,12 +1786,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );

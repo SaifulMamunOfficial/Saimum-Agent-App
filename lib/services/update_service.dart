@@ -7,11 +7,14 @@ import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class UpdateService {
-
   static const String _githubRepo = 'SaifulMamunOfficial/Saimum-Agent-App';
-  static const String _apiUrl = 'https://api.github.com/repos/$_githubRepo/releases/latest';
+  static const String _apiUrl =
+      'https://api.github.com/repos/$_githubRepo/releases/latest';
 
-  static Future<void> checkForUpdate(BuildContext context) async {
+  static Future<void> checkForUpdate(
+    BuildContext context, {
+    bool showNoUpdateMessage = false,
+  }) async {
     try {
       final dio = Dio();
       final response = await dio.get(_apiUrl);
@@ -20,7 +23,7 @@ class UpdateService {
         final latestVersionTag = response.data['tag_name'] as String;
         // GitHub tags usually have a 'v' prefix, e.g., 'v1.0.1'
         final latestVersion = latestVersionTag.replaceAll('v', '');
-        
+
         final packageInfo = await PackageInfo.fromPlatform();
         final currentVersion = packageInfo.version;
 
@@ -32,16 +35,67 @@ class UpdateService {
 
           if (apkAsset != null) {
             final downloadUrl = apkAsset['browser_download_url'];
-            final releaseNotes = response.data['body'] ?? 'নতুন আপডেট পাওয়া গেছে।';
-            
+            final releaseNotes =
+                response.data['body'] ?? 'নতুন আপডেট পাওয়া গেছে।';
+
             if (context.mounted) {
-              _showUpdateDialog(context, latestVersion, releaseNotes, downloadUrl);
+              _showUpdateDialog(
+                context,
+                latestVersion,
+                releaseNotes,
+                downloadUrl,
+              );
             }
+          } else if (showNoUpdateMessage && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('আপনার অ্যাপটি আপ-টু-ডেট আছে।'),
+                backgroundColor: Colors.green,
+              ),
+            );
           }
+        } else if (showNoUpdateMessage && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('আপনার অ্যাপটি আপ-টু-ডেট আছে।'),
+              backgroundColor: Colors.green,
+            ),
+          );
         }
       }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        if (showNoUpdateMessage && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('আপনার অ্যাপটি আপ-টু-ডেট আছে।'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (showNoUpdateMessage && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'আপডেট চেক করতে সমস্যা হয়েছে। ইন্টারনেট কানেকশন চেক করুন।',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        debugPrint('Update check failed: $e');
+      }
     } catch (e) {
-      debugPrint('Update check failed: $e');
+      if (showNoUpdateMessage && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('আপডেট চেক করতে সমস্যা হয়েছে।'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      debugPrint('Update check error: $e');
     }
   }
 
@@ -56,21 +110,37 @@ class UpdateService {
     return latestParts.length > currentParts.length;
   }
 
-  static void _showUpdateDialog(BuildContext context, String version, String releaseNotes, String downloadUrl) {
+  static void _showUpdateDialog(
+    BuildContext context,
+    String version,
+    String releaseNotes,
+    String downloadUrl,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text('নতুন আপডেট! (v$version)', style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            'নতুন আপডেট! (v$version)',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('অ্যাপের একটি নতুন ভার্সন পাওয়া গেছে। অনুগ্রহ করে আপডেট করুন।'),
+                const Text(
+                  'অ্যাপের একটি নতুন ভার্সন পাওয়া গেছে। অনুগ্রহ করে আপডেট করুন।',
+                ),
                 const SizedBox(height: 12),
-                Text('রিলিজ নোট:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+                Text(
+                  'রিলিজ নোট:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(releaseNotes, style: const TextStyle(fontSize: 13)),
               ],
@@ -82,12 +152,17 @@ class UpdateService {
               child: const Text('পরে', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF751F)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF751F),
+              ),
               onPressed: () {
                 Navigator.pop(context);
                 _downloadAndInstallUpdate(context, downloadUrl, version);
               },
-              child: const Text('আপডেট করুন', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'আপডেট করুন',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -95,7 +170,11 @@ class UpdateService {
     );
   }
 
-  static Future<void> _downloadAndInstallUpdate(BuildContext context, String url, String version) async {
+  static Future<void> _downloadAndInstallUpdate(
+    BuildContext context,
+    String url,
+    String version,
+  ) async {
     bool hasPermission = await _requestPermissions();
     if (!hasPermission) {
       if (context.mounted) {
@@ -116,7 +195,7 @@ class UpdateService {
     try {
       final dir = await getExternalStorageDirectory();
       final savePath = '${dir?.path}/update_v$version.apk';
-      
+
       final dio = Dio();
       await dio.download(
         url,
@@ -143,9 +222,9 @@ class UpdateService {
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context); // close dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('ডাউনলোড ব্যর্থ: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('ডাউনলোড ব্যর্থ: $e')));
       }
     }
   }
@@ -154,14 +233,16 @@ class UpdateService {
     if (Platform.isAndroid) {
       final status = await Permission.storage.request();
       final installStatus = await Permission.requestInstallPackages.request();
-      return status.isGranted || installStatus.isGranted; 
+      return status.isGranted || installStatus.isGranted;
     }
     return true;
   }
 }
 
 class _DownloadProgressDialog extends StatelessWidget {
-  static final ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
+  static final ValueNotifier<double> progressNotifier = ValueNotifier<double>(
+    0.0,
+  );
 
   const _DownloadProgressDialog();
 
