@@ -117,6 +117,46 @@ class ApiService {
     }
   }
 
+  // PUT Request
+  static Future<Map<String, dynamic>> put(String path, Map<String, dynamic> body) async {
+    try {
+      final response = await http.put(
+        Uri.parse("$_serverUrl$path"),
+        headers: _getHeaders(),
+        body: jsonEncode(body),
+      );
+      return _handleResponse(response);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException("সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না। দয়া করে আপনার ইন্টারনেট কানেকশন চেক করুন।", 0);
+    }
+  }
+
+  // Multipart POST Request for File Uploads
+  static Future<Map<String, dynamic>> multipartPost(String path, String filePath) async {
+    try {
+      final request = http.MultipartRequest("POST", Uri.parse("$_serverUrl$path"));
+      
+      // Add Headers
+      if (_token != null) {
+        request.headers["Authorization"] = "Bearer $_token";
+      }
+      request.headers["Accept"] = "application/json";
+
+      // Attach file
+      request.files.add(await http.MultipartFile.fromPath("avatar", filePath));
+
+      // Send request
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return _handleResponse(response);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException("ফাইল আপলোডে সমস্যা হয়েছে। ইন্টারনেট কানেকশন চেক করুন।", 0);
+    }
+  }
+
   // Get students list for attendance
   static Future<List<dynamic>> fetchStudentsForAttendance(String department) async {
     try {

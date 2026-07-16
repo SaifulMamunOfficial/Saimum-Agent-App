@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../controllers/app_state.dart';
 import '../services/update_service.dart';
 import 'qr_scanner_screen.dart';
@@ -1113,22 +1115,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 // Avatar positioned slightly overlapping
                 Transform.translate(
                   offset: const Offset(0, -40),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: CircleAvatar(
-                      radius: 38,
-                      backgroundColor: const Color(
-                        0xFFFF751F,
-                      ).withValues(alpha: 0.1),
-                      child: const Icon(
-                        Icons.person,
-                        color: Color(0xFFFF751F),
-                        size: 44,
-                      ),
+                  child: GestureDetector(
+                    onTap: () async {
+                      final ImagePicker picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                      if (image != null && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('ছবি আপলোড করা হচ্ছে...')),
+                        );
+                        try {
+                          await ref.read(appStateProvider).uploadProfilePicture(image.path);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('ছবি সফলভাবে আপডেট হয়েছে!'), backgroundColor: Colors.green),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('ছবি আপলোডে সমস্যা হয়েছে।'), backgroundColor: Colors.red),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: CircleAvatar(
+                            radius: 38,
+                            backgroundColor: const Color(0xFFFF751F).withValues(alpha: 0.1),
+                            backgroundImage: user?['avatar'] != null ? NetworkImage(user!['avatar']) : null,
+                            child: user?['avatar'] == null
+                                ? const Icon(
+                                    Icons.person,
+                                    color: Color(0xFFFF751F),
+                                    size: 44,
+                                  )
+                                : null,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFF751F),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

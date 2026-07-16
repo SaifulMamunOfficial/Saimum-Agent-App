@@ -106,6 +106,26 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // Upload Profile Picture
+  Future<void> uploadProfilePicture(String filePath) async {
+    _setLoading(true);
+    try {
+      final response = await ApiService.multipartPost('/profile/avatar', filePath);
+      
+      // Response should contain the new avatar URL
+      if (response['avatar'] != null && _currentUser != null) {
+        _currentUser!['avatar'] = response['avatar'];
+        // Re-save to secure storage
+        await _secureStorage.write(key: "user_info", value: jsonEncode(_currentUser));
+        notifyListeners();
+      }
+      _setLoading(false);
+    } catch (e) {
+      _setLoading(false);
+      rethrow;
+    }
+  }
+
   // Search/Scan Student
   Future<void> searchStudent(String query) async {
     _setLoading(true);
