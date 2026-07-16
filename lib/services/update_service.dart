@@ -100,8 +100,12 @@ class UpdateService {
   }
 
   static bool _isUpdateAvailable(String current, String latest) {
-    List<int> currentParts = current.split('.').map(int.parse).toList();
-    List<int> latestParts = latest.split('.').map(int.parse).toList();
+    // Strip build numbers if present (e.g., 1.0.0+1 -> 1.0.0)
+    String currentClean = current.split('+')[0].trim();
+    String latestClean = latest.split('+')[0].trim();
+
+    List<int> currentParts = currentClean.split('.').map(int.parse).toList();
+    List<int> latestParts = latestClean.split('.').map(int.parse).toList();
 
     for (int i = 0; i < currentParts.length && i < latestParts.length; i++) {
       if (latestParts[i] > currentParts[i]) return true;
