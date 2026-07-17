@@ -66,7 +66,12 @@ class ApiService {
     Map<String, dynamic> jsonResponse = {};
     
     try {
-      jsonResponse = jsonDecode(body);
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        jsonResponse = decoded;
+      } else {
+        jsonResponse = {"message": body.isNotEmpty ? body : "সার্ভার থেকে অপ্রত্যাশিত রেসপন্স এসেছে।"};
+      }
     } catch (_) {
       // Return raw string or generic map if not JSON
       jsonResponse = {"message": body.isNotEmpty ? body : "সিস্টেম ত্রুটি হয়েছে।"};
@@ -160,7 +165,7 @@ class ApiService {
   // Get students list for attendance
   static Future<List<dynamic>> fetchStudentsForAttendance(String department) async {
     try {
-      final response = await get('/agent/students?status=all&department=${Uri.encodeComponent(department)}');
+      final response = await get('/agent/students?status=all&per_page=1000&department=${Uri.encodeComponent(department)}');
       return response['data'] ?? response['students'] ?? [];
     } catch (e) {
       rethrow;

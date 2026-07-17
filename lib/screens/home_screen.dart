@@ -972,6 +972,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             student['reg_id'] ?? student['student_id'] ?? '';
                         final bool isPresent =
                             _attendanceState[studentIdStr] ?? false;
+                        final String? photoUrl = student['profile_photo_url'];
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 10.0),
@@ -988,19 +989,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             child: Row(
                               children: [
-                                CircleAvatar(
-                                  backgroundColor: (isPresent
-                                      ? Colors.green
-                                      : Colors.grey.shade100),
-                                  radius: 20,
-                                  child: Icon(
-                                    isPresent
-                                        ? Icons.check
-                                        : Icons.person_outline,
-                                    color: isPresent
-                                        ? Colors.white
-                                        : Colors.grey.shade500,
-                                  ),
+                                Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: isPresent ? Colors.green : Colors.grey.shade100,
+                                      radius: 20,
+                                      backgroundImage: (photoUrl != null && photoUrl.isNotEmpty) ? NetworkImage(photoUrl) : null,
+                                      child: (photoUrl == null || photoUrl.isEmpty)
+                                          ? Icon(
+                                              isPresent ? Icons.check : Icons.person_outline,
+                                              color: isPresent ? Colors.white : Colors.grey.shade500,
+                                            )
+                                          : null,
+                                    ),
+                                    if (isPresent && photoUrl != null && photoUrl.isNotEmpty)
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: Colors.white, width: 1.5),
+                                          ),
+                                          child: const Icon(Icons.check, color: Colors.white, size: 10),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 const SizedBox(width: 14),
 

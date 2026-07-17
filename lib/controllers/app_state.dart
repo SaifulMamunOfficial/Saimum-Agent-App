@@ -266,7 +266,11 @@ class AppState extends ChangeNotifier {
       _setLoading(false);
       return response;
     } catch (e) {
-      // If network fails, save offline
+      if (e is ApiException && e.statusCode != 0) {
+        _setLoading(false);
+        rethrow; // Rethrow logical errors and server errors (e.g., 404, 400, 409, 500)
+      }
+      // If network fails (status code 0), save offline
       await DatabaseHelper.instance.insertAttendance(studentId, departmentId);
       _setLoading(false);
       return {'status': 'offline', 'message': 'অফলাইনে হাজিরা সেভ করা হয়েছে। ইন্টারনেট পেলে সিঙ্ক করুন।'};

@@ -46,12 +46,18 @@ class _QrScannerScreenState extends ConsumerState<QrScannerScreen> {
 
 
 
-  void _showAttendanceSuccessPopup(Map<String, dynamic> student) {
+  void _showAttendanceSuccessPopup(Map<String, dynamic>? student) {
     setState(() {
       _showSuccessOverlay = true;
-      _studentName = student['name'] ?? '';
-      _studentIdVal = student['student_id'] ?? '';
-      _studentPhotoUrl = student['photo_url'];
+      if (student != null) {
+        _studentName = student['name'] ?? '';
+        _studentIdVal = student['student_id'] ?? '';
+        _studentPhotoUrl = student['photo_url'];
+      } else {
+        _studentName = 'অফলাইন হাজিরা';
+        _studentIdVal = _lastScannedCode ?? '';
+        _studentPhotoUrl = null;
+      }
     });
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
